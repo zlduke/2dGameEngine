@@ -53,7 +53,11 @@ void Game::Initialize()
 
 void Game::Setup()
 {
-    millisecsPreviousFrame = SDL_GetTicks();
+    // TODO:
+    // Entity tank = registry.CreateEntity();
+    // tank.AddComponent<TransformComponent>();
+    // tank.AddComponent<BoxColliderComponent>();
+    // tank.AddComponent<SpriteComponent>("./assets/...");
 }
 
 void Game::Update()
@@ -68,9 +72,12 @@ void Game::Update()
 
     // the actual elapsed time since the last frame
     double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0f;
-    millisecsPreviousFrame = SDL_GetTicks();
 
     // update player locations etc.
+    // TODO:
+    // MovementSystem.Update();
+    // CollisionSystem.Update();
+    // DamageSystem.Update();
 }
 
 void Game::Run()
@@ -109,16 +116,7 @@ void Game::Render()
     SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
     SDL_RenderClear(renderer); // this is actually filling colors, the naming is misleading
 
-    // Load a PNG --> surface --> texture --> render
-    SDL_Surface *surface = IMG_Load("./assets/images/tank-panther-right.png");
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-    SDL_Rect dstRect = {
-        static_cast<int>(playerPosition.x),
-        static_cast<int>(playerPosition.y),
-        50,
-        50};
-    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+    // TODO
 
     SDL_RenderPresent(renderer);
     // double-buffer: alternate front and back buffers
