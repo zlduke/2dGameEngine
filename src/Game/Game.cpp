@@ -51,13 +51,8 @@ void Game::Initialize()
     isRunning = true;
 }
 
-glm::vec2 playerPosition;
-glm::vec2 playerVelocity;
-
 void Game::Setup()
 {
-    playerPosition = glm::vec2(10.0, 20.0);
-    playerVelocity = glm::vec2(10.0, 0.0);
     millisecsPreviousFrame = SDL_GetTicks();
 }
 
@@ -76,8 +71,6 @@ void Game::Update()
     millisecsPreviousFrame = SDL_GetTicks();
 
     // update player locations etc.
-    playerPosition.x += playerVelocity.x * deltaTime;
-    playerPosition.y += playerVelocity.y * deltaTime;
 }
 
 void Game::Run()
