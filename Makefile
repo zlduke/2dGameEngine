@@ -11,7 +11,7 @@ LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -llua
 OBJ_NAME = gameengine
 
 ##############################
-### 	Make file rules
+### 	Make file rules  #####
 ##############################
 
 build:
