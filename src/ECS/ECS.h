@@ -41,7 +41,13 @@ private:
 
 public:
     Entity(int id) : id(id){};
+    Entity(const Entity &other) = default;
     int GetId() const; // encapsulation trick; const = not changing anything
+    Entity &operator=(const Entity &other) = default;
+    bool operator==(const Entity &other) const { return id == other.GetId(); }
+    bool operator!=(const Entity &other) const { return id != other.GetId(); }
+    bool operator>(const Entity &other) const { return id > other.GetId(); }
+    bool operator<(const Entity &other) const { return id < other.GetId(); }
 };
 
 //
@@ -61,7 +67,7 @@ public:
     // and by what quantities?
     void RemoveEntityFromSystem(Entity entity);
     std::vector<Entity> GetSystemEntites() const;
-    Signature GetComponentSignature() const;
+    const Signature &GetComponentSignature() const;
 
     // Defines the component that the entities must have to be considered by this system
     template <typename TComponent>
