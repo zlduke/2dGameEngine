@@ -28,3 +28,15 @@ const Signature &System::GetComponentSignature() const
 {
     return componentSignature;
 }
+
+Entity Registry::CreateEntity()
+{
+    int entityId = numEntities++;
+    Entity entity(entityId);
+    if (entityId > entityComponentSignatures.size())
+    {
+        entityComponentSignatures.resize(entityId);
+    }
+    // Q: when to handle the signatures?
+    entitiesToBeAdded.insert(entity);
+}

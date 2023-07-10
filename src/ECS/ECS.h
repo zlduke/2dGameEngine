@@ -2,6 +2,9 @@
 #define ECS_H
 #include <vector>
 #include <bitset>
+#include <unordered_map>
+#include <typeindex>
+#include <set>
 
 const unsigned int MAX_COMPONENTS = 32;
 ///////////////////////////////////////////////////////////////
@@ -74,10 +77,6 @@ public:
     void RequireComponent();
 };
 
-class Registry
-{
-};
-
 // Typically we define functions with template in .h file
 template <typename TComponent>
 void System::RequireComponent()
@@ -85,5 +84,106 @@ void System::RequireComponent()
     const auto componentId = Component<TComponent>::GetId();
     componentSignature.set(componentId);
 }
+
+////////////////////////////////////////////////////
+// Pool
+////////////////////////////////////////////////////
+// A pool is just a vector (contiguous data) of
+// objects of type T
+////////////////////////////////////////////////////
+class IPool
+{
+public:
+    // enforcing this class to be only used by inheritence
+    virtual ~IPool(){};
+};
+
+template <typename T>
+class Pool : public IPool
+{
+private:
+    std::vector<T> data;
+
+public:
+    Pool(int size = 100)
+    {
+        data.resize(size);
+    }
+    ~Pool() = default;
+    bool isEmpty() const { return data.empty(); }
+    int GetSize() const
+    {
+        return data.size();
+    }
+    void Resize(int n)
+    {
+        return data.resize(n);
+    }
+    void Add(T object)
+    {
+        data.push_back(object);
+    }
+    void Set(int index, T object)
+    {
+        data[index] = object;
+    }
+    T &Get(int index)
+    {
+        // why is this needed?
+        return static_cast<T &>(data[index]);
+    }
+    T &operator[](unsigned int index)
+    {
+        return static_cast<T &>(data[index]);
+    }
+};
+////////////////////////////////////////////////////
+// Registry
+////////////////////////////////////////////////////
+// aka "coordinator", "world class", "enetity manager"
+// The registry manages the creation and destruction
+// of entities, add systems, and components.
+////////////////////////////////////////////////////
+class Registry
+{
+private:
+    int numEntities = 0;
+
+    // Avoid adding entites in the middle of something else.
+    std::set<Entity> entitiesToBeAdded;
+    std::set<Entity> entitiesToBeKilled;
+
+    /* componentPools: vector of pools
+    component types [0][1] ...
+    ---------------------------------
+    for entity0     [x][z] ...
+    for entity1     [y][w] ...
+    ...             ...
+    ---------------------------------
+    vector index = component type id
+    pool index = entity id
+    */
+    // use base dummy IPool to avoid specifying pool<T>.
+    // allowing different types of Pools to be mixed together
+    std::vector<IPool *> componentPools;
+
+    // vector[entity id] = componentSignture of the entity
+    std::vector<Signature> entityComponentSignatures;
+
+    // here we don't need to sort the maps
+    // Given typeinfo(class) we can find the actual instantiation
+    std::unordered_map<std::type_index, System *> systems;
+
+public:
+    Registry() = default;
+
+    // Think of how to add E, C, S first
+    Entity CreateEntity();
+
+    // AddComponent()
+    // GetComponent()
+
+    // AddSystem()
+};
 
 #endif
