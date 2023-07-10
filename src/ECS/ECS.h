@@ -177,13 +177,67 @@ private:
 public:
     Registry() = default;
 
-    // Think of how to add E, C, S first
+    void Update();
+
     Entity CreateEntity();
+    void AddEntityToSystem(Entity entity);
+
+    // TODO: AddComponent<TComponent>(...) generalize types of components
+    // and ways (args) to initialize them. For examples:
+    // registry.AddComponent<TransformComponent>(entity, locaiton, speed, rottation)
+    // registry.AddComponent<SpriteComponent>(entity, "path_to_sprite.png")
+    template <typename TComponent, typename... TArgs>
+    void AddComponent(Entity entity, TArgs &&...args);
 
     // AddComponent()
+
     // GetComponent()
 
     // AddSystem()
 };
 
+//  "For all (...) the arguments (args) of arbitrary types (TArgs), \
+// preserve their original value category (&&)".
+template <typename TComponent, typename... TArgs>
+void Registry::AddComponent(Entity entity, TArgs &&...args)
+{
+    // get ids and initialize the component
+    const int componentId = Component<TComponent>::GetId();
+    const int entityId = entity.GetId();
+
+    // Check if this component exists in the pool
+    if (componentId >= componentPools.size())
+    {
+        componentPools.resize(componentId + 1, nullptr);
+    }
+    // Check the pool associated with the component
+    if (!componentPools[componentId])
+    {
+        // using new to retain the ownership beyond this func
+        Pool<TComponent> *newComponentPool = new Pool<TComponent>();
+        componentPools[componentId] = newComponentPool;
+    }
+
+    // Check the entity in that pool
+    Pool<TComponent> *componentPool = componentPools[componentId];
+    if (entityId >= componentPool->GetSize())
+    {
+        // I want to use entityId + 1 instead of this
+        componentPool->Resize(numEntities);
+    }
+
+    // create new component and register the entity-component pair
+    TComponent newComponent(std::forward<TArgs>(args)...);
+    componentPool->Set(entityId, newComponent);
+
+    // update the signature (bitset) for this entity
+    // shouldn't this bracket be included?
+    /*
+    if (entityId >= entityComponentSignatures.size())
+    {
+        entityComponentSignatures.resize(entityId + 1);
+    }
+    */
+    entityComponentSignatures[entityId].set(componentId);
+}
 #endif

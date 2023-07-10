@@ -1,4 +1,6 @@
 #include "ECS.h"
+#include "../Logger/Logger.h"
+#include <string>
 
 // TODO implement all the functions of ECS
 
@@ -33,10 +35,17 @@ Entity Registry::CreateEntity()
 {
     int entityId = numEntities++;
     Entity entity(entityId);
-    if (entityId > entityComponentSignatures.size())
-    {
-        entityComponentSignatures.resize(entityId);
-    }
-    // Q: when to handle the signatures?
     entitiesToBeAdded.insert(entity);
+    Logger::Log("Entity created with id = " + std::to_string(entityId));
+    return entity;
+}
+
+void Registry::Update()
+{
+    // Add the entities awaiting to be created to the active systems
+    // remove entities to be killed in the system
+    // my thoughts: to register the component signatures and append the vector as well
+    // handle signature
+    // extend the sizes
+    // clear the set buffer
 }
