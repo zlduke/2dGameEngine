@@ -189,6 +189,11 @@ public:
     template <typename TComponent, typename... TArgs>
     void AddComponent(Entity entity, TArgs &&...args);
 
+    template <typename TComponent>
+    void RemoveComponent(Entity entity);
+
+    template <typename TComponent>
+    bool HasComponent(Entity entity) const;
     // AddComponent()
 
     // GetComponent()
@@ -214,6 +219,7 @@ void Registry::AddComponent(Entity entity, TArgs &&...args)
     if (!componentPools[componentId])
     {
         // using new to retain the ownership beyond this func
+        // to be replaced by smart pointers
         Pool<TComponent> *newComponentPool = new Pool<TComponent>();
         componentPools[componentId] = newComponentPool;
     }
@@ -239,5 +245,21 @@ void Registry::AddComponent(Entity entity, TArgs &&...args)
     }
     */
     entityComponentSignatures[entityId].set(componentId);
+}
+
+template <typename TComponent>
+void Registry::RemoveComponent(Entity entity)
+{
+    const int componentId = Component<TComponent>::GetId();
+    const int entityId = entity.GetId();
+    entityComponentSignatures[entityId].set(componentId, false);
+}
+
+template <typename TComponent>
+bool Registry::HasComponent(Entity entity) const
+{
+    const int componentId = Component<TComponent>::GetId();
+    const int entityId = entity.GetId();
+    return entityComponentSignatures[entityId].test(componentId);
 }
 #endif

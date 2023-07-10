@@ -2,7 +2,7 @@
 #include "../Logger/Logger.h"
 #include <string>
 
-// TODO implement all the functions of ECS
+int IComponent::nextId = 0;
 
 int Entity::GetId() const
 {
