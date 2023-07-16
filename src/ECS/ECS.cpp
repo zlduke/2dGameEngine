@@ -11,6 +11,7 @@ int Entity::GetId() const
 
 void System::AddEntityToSystem(Entity entity)
 {
+    // where to perform filtering?
     entities.push_back(entity);
 }
 void System::RemoveEntityFromSystem(Entity entity)
@@ -48,4 +49,21 @@ void Registry::Update()
     // handle signature
     // extend the sizes
     // clear the set buffer
+}
+
+void Registry::AddEntityToSystems(Entity entity)
+{
+    const auto entityId = entity.GetId();
+    const auto &entityComponentSignature = entityComponentSignatures[entityId];
+
+    // loop and test signatures
+    for (auto &pair : systems)
+    {
+        auto const &systemComponentSignature = pair.second->GetComponentSignature();
+        bool isInterested = (systemComponentSignature & entityComponentSignature) == systemComponentSignature;
+        if (isInterested)
+        {
+            pair.second->AddEntityToSystem(entity);
+        }
+    }
 }

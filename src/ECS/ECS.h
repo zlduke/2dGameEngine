@@ -53,7 +53,6 @@ public:
     bool operator<(const Entity &other) const { return id < other.GetId(); }
 };
 
-//
 class System
 {
 private:
@@ -160,8 +159,6 @@ private:
     for entity1     [y][w] ...
     ...             ...
     ---------------------------------
-    vector index = component type id
-    pool index = entity id
     */
     // use base dummy IPool to avoid specifying pool<T>.
     // allowing different types of Pools to be mixed together
@@ -194,12 +191,57 @@ public:
 
     template <typename TComponent>
     bool HasComponent(Entity entity) const;
-    // AddComponent()
 
-    // GetComponent()
+    template <typename TSystem, typename... TArgs>
+    void AddSystem(TArgs &&...args);
+    template <typename TSystem>
+    void RemoveSystem();
+    template <typename TSystem>
+    bool HasSystem() const;
+    template <typename TSystem>
+    TSystem &GetSystem() const;
 
-    // AddSystem()
+    // Add entity to systems that are interested in such entity by signature
+    void AddEntityToSystems(Entity entity);
 };
+
+template <typename TSystem, typename... TArgs>
+void Registry::AddSystem(TArgs &&...args)
+{
+    // this intialization is a little odd
+    TSystem *newSystemPtr(new TSystem(std::forward<TArgs>(args)...));
+    // I want to use this instead
+    // TSystem *newSystemPtr = new TSystem(std::forward<TArgs>(args)...);
+    systems.insert({std::type_index(typeid(TSystem)), newSystemPtr});
+}
+
+template <typename TSystem>
+void Registry::RemoveSystem()
+{
+    // typically, try to find a pointer, of that key (stupid C++), then delete by key
+    auto system = systems.find(std::type_index(typeid(TSystem)));
+    // what if it doesn't exist
+    systems.erase(system);
+}
+template <typename TSystem>
+bool Registry::HasSystem() const
+{
+    auto it = systems.find(std::type_index(typeid(TSystem)));
+    return it != systems.end();
+}
+template <typename TSystem>
+TSystem &Registry::GetSystem() const
+{
+    auto it = systems.find(std::type_index(typeid(TSystem)));
+    if (it == systems.end())
+    {
+        throw std::logic_error("System not found");
+    }
+    // ChatGPT: In C++, it's safe to cast the base pointer to a \
+    // derived type as long as you're absolutely certain the base \
+    // is pointing to a derived object.
+    return *(std::static_pointer_cast<TSystem>(it->second));
+}
 
 //  "For all (...) the arguments (args) of arbitrary types (TArgs), \
 // preserve their original value category (&&)".
