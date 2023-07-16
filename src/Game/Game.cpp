@@ -4,6 +4,8 @@
 #include <SDL2/SDL_image.h>
 #include <glm/glm.hpp>
 #include "../Logger/Logger.h"
+#include "../Components/TransformerComponent.h"
+#include "../Components/RigidBodyComponent.h"
 
 Game::Game()
 {
@@ -54,8 +56,12 @@ void Game::Initialize()
 
 void Game::Setup()
 {
+    // Add entities
     Entity tank = registry->CreateEntity();
-    Entity truck = registry->CreateEntity();
+
+    // Add components to entities
+    registry->AddComponent<TransformerComponent>(tank, glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0);
+    registry->AddComponent<RigidBodyComponent>(tank, glm::vec2(50.0, 0));
 }
 
 void Game::Update()
@@ -69,7 +75,7 @@ void Game::Update()
     }
 
     // the actual elapsed time since the last frame
-    double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0f;
+    // double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0f;
 
     // update player locations etc.
     // TODO:

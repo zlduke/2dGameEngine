@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <typeindex>
 #include <set>
+#include "../Logger/Logger.h"
 
 const unsigned int MAX_COMPONENTS = 32;
 ///////////////////////////////////////////////////////////////
@@ -29,6 +30,7 @@ protected:
 template <typename TComponent>
 class Component : public IComponent
 {
+public:
     // 'static' ensures that we can operate on the class level, not necessarily on the object.
     static int GetId()
     {
@@ -285,6 +287,7 @@ void Registry::AddComponent(Entity entity, TArgs &&...args)
     }
     */
     entityComponentSignatures[entityId].set(componentId);
+    Logger::Log("Component id = " + std::to_string(componentId) + " was added to entity id " + std::to_string(entityId));
 }
 
 template <typename TComponent>

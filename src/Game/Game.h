@@ -13,6 +13,8 @@ private:
     //
     bool isRunning;
     int millisecsPreviousFrame;
+    // SDL is written in C, as "opaque object"
+    // we would need some wrapper such as std::unique_ptr<SDLxx, DestroySDLxx> to make it work.
     SDL_Window *window;
     SDL_Renderer *renderer;
 
