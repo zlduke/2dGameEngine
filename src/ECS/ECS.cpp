@@ -37,6 +37,10 @@ Entity Registry::CreateEntity()
     int entityId = numEntities++;
     Entity entity(entityId);
     entitiesToBeAdded.insert(entity);
+    if (entityId >= entityComponentSignatures.size())
+    {
+        entityComponentSignatures.resize(entityId + 1);
+    }
     Logger::Log("Entity created with id = " + std::to_string(entityId));
     return entity;
 }
@@ -44,11 +48,14 @@ Entity Registry::CreateEntity()
 void Registry::Update()
 {
     // Add the entities awaiting to be created to the active systems
-    // remove entities to be killed in the system
-    // my thoughts: to register the component signatures and append the vector as well
-    // handle signature
-    // extend the sizes
-    // clear the set buffer
+    // loop entities and insert into correct systems
+    for (auto entity : entitiesToBeAdded)
+    {
+        AddEntityToSystems(entity);
+    }
+    entitiesToBeAdded.clear();
+
+    // remove entities waiting to be killed
 }
 
 void Registry::AddEntityToSystems(Entity entity)

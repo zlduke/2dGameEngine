@@ -8,6 +8,7 @@
 Game::Game()
 {
     isRunning = false;
+    registry = std::make_unique<Registry>();
     Logger::Log("Game constructor is called!");
 }
 
@@ -53,11 +54,8 @@ void Game::Initialize()
 
 void Game::Setup()
 {
-    // TODO:
-    // Entity tank = registry.CreateEntity();
-    // tank.AddComponent<TransformComponent>();
-    // tank.AddComponent<BoxColliderComponent>();
-    // tank.AddComponent<SpriteComponent>("./assets/...");
+    Entity tank = registry->CreateEntity();
+    Entity truck = registry->CreateEntity();
 }
 
 void Game::Update()
@@ -115,8 +113,6 @@ void Game::Render()
     // set up canvas
     SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
     SDL_RenderClear(renderer); // this is actually filling colors, the naming is misleading
-
-    // TODO
 
     SDL_RenderPresent(renderer);
     // double-buffer: alternate front and back buffers

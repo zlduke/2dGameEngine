@@ -162,14 +162,14 @@ private:
     */
     // use base dummy IPool to avoid specifying pool<T>.
     // allowing different types of Pools to be mixed together
-    std::vector<IPool *> componentPools;
+    std::vector<std::shared_ptr<IPool>> componentPools;
 
     // vector[entity id] = componentSignture of the entity
     std::vector<Signature> entityComponentSignatures;
 
     // here we don't need to sort the maps
     // Given typeinfo(class) we can find the actual instantiation
-    std::unordered_map<std::type_index, System *> systems;
+    std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
 
 public:
     Registry() = default;
@@ -208,10 +208,8 @@ public:
 template <typename TSystem, typename... TArgs>
 void Registry::AddSystem(TArgs &&...args)
 {
-    // this intialization is a little odd
-    TSystem *newSystemPtr(new TSystem(std::forward<TArgs>(args)...));
-    // I want to use this instead
-    // TSystem *newSystemPtr = new TSystem(std::forward<TArgs>(args)...);
+    // Tsystem might be co-owned since this pointer is inserted to some other data structures.
+    std::shared_ptr<TSystem> newSystemPtr = std::make_shared<TSystem>(std::forward<TArgs>(args)...);
     systems.insert({std::type_index(typeid(TSystem)), newSystemPtr});
 }
 
@@ -262,12 +260,12 @@ void Registry::AddComponent(Entity entity, TArgs &&...args)
     {
         // using new to retain the ownership beyond this func
         // to be replaced by smart pointers
-        Pool<TComponent> *newComponentPool = new Pool<TComponent>();
+        std::shared_ptr<Pool<TComponent>> newComponentPool = std::make_shared<Pool<TComponent>>();
         componentPools[componentId] = newComponentPool;
     }
 
     // Check the entity in that pool
-    Pool<TComponent> *componentPool = componentPools[componentId];
+    std::shared_ptr<Pool<TComponent>> componentPool = std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
     if (entityId >= componentPool->GetSize())
     {
         // I want to use entityId + 1 instead of this
