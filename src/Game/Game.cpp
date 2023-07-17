@@ -14,6 +14,7 @@ Game::Game()
 {
     isRunning = false;
     registry = std::make_unique<Registry>();
+    assetStore = std::make_unique<AssetStore>();
     Logger::Log("Game constructor is called!");
 }
 
@@ -63,16 +64,20 @@ void Game::Setup()
     registry->AddSystem<MovementSystem>();
     registry->AddSystem<RenderSystem>();
 
+    // Adding assets to assetStore
+    assetStore->AddTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
+    assetStore->AddTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
+
     // Add entity
     Entity tank = registry->CreateEntity();
-    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0);
+    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(3.0, 3.0), 0.0);
     tank.AddComponent<RigidBodyComponent>(glm::vec2(40, 0));
-    tank.AddComponent<SpriteComponent>(10, 10); // try simple rectangle first
+    tank.AddComponent<SpriteComponent>("tank-image", 32, 32);
 
     Entity truck = registry->CreateEntity();
     truck.AddComponent<TransformComponent>(glm::vec2(50.0, 100.0), glm::vec2(1.0, 1.0), 0);
     truck.AddComponent<RigidBodyComponent>(glm::vec2(0, 50.0));
-    truck.AddComponent<SpriteComponent>(10, 50); // try simple rectangle first
+    truck.AddComponent<SpriteComponent>("truck-image", 32, 32);
 }
 
 void Game::Update()
@@ -134,7 +139,7 @@ void Game::Render()
     SDL_RenderClear(renderer); // this is actually filling colors, the naming is misleading
 
     // invoke all systems that need to render
-    registry->GetSystem<RenderSystem>().Update(renderer);
+    registry->GetSystem<RenderSystem>().Update(renderer, assetStore);
 
     SDL_RenderPresent(renderer);
     // double-buffer: alternate front and back buffers
