@@ -4,8 +4,9 @@
 #include <SDL2/SDL_image.h>
 #include <glm/glm.hpp>
 #include "../Logger/Logger.h"
-#include "../Components/TransformerComponent.h"
+#include "../Components/TransformComponent.h"
 #include "../Components/RigidBodyComponent.h"
+#include "../Systems/MovementSystem.h"
 
 Game::Game()
 {
@@ -56,12 +57,15 @@ void Game::Initialize()
 
 void Game::Setup()
 {
+    // Add systems
+    registry->AddSystem<MovementSystem>();
+
     // Add entities
     Entity tank = registry->CreateEntity();
 
     // Add components to entities
-    registry->AddComponent<TransformerComponent>(tank, glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0);
-    registry->AddComponent<RigidBodyComponent>(tank, glm::vec2(50.0, 0));
+    tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0);
+    tank.AddComponent<RigidBodyComponent>(glm::vec2(50.0, 0));
 }
 
 void Game::Update()
@@ -75,13 +79,15 @@ void Game::Update()
     }
 
     // the actual elapsed time since the last frame
-    // double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0f;
+    double deltaTime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0f;
+    // Store the previous frame time
+    millisecsPreviousFrame = SDL_GetTicks();
 
-    // update player locations etc.
-    // TODO:
-    // MovementSystem.Update();
-    // CollisionSystem.Update();
-    // DamageSystem.Update();
+    // Ask all the systems to update
+    registry->GetSystem<MovementSystem>().Update(deltaTime);
+
+    // In the end: Update the registry to process the queued entites to be added
+    registry->Update();
 }
 
 void Game::Run()

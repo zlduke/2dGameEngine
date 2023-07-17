@@ -39,6 +39,7 @@ public:
     }
 };
 
+// forward declaration before using it in the Entity class
 class Entity
 {
 private:
@@ -53,6 +54,17 @@ public:
     bool operator!=(const Entity &other) const { return id != other.GetId(); }
     bool operator>(const Entity &other) const { return id > other.GetId(); }
     bool operator<(const Entity &other) const { return id < other.GetId(); }
+
+    template <typename TComponent, typename... TArgs>
+    void AddComponent(TArgs &&...args);
+    template <typename TComponent>
+    void RemoveComponent();
+    template <typename TComponent>
+    bool HasComponent() const;
+    template <typename TComponent>
+    TComponent &GetComponent() const;
+    // Hold a pointer to the entity's owner registry
+    class Registry *registry; // forward declaration
 };
 
 class System
@@ -187,12 +199,12 @@ public:
     // registry.AddComponent<SpriteComponent>(entity, "path_to_sprite.png")
     template <typename TComponent, typename... TArgs>
     void AddComponent(Entity entity, TArgs &&...args);
-
     template <typename TComponent>
     void RemoveComponent(Entity entity);
-
     template <typename TComponent>
     bool HasComponent(Entity entity) const;
+    template <typename TComponent>
+    TComponent &GetComponent(Entity entity) const;
 
     template <typename TSystem, typename... TArgs>
     void AddSystem(TArgs &&...args);
@@ -304,5 +316,36 @@ bool Registry::HasComponent(Entity entity) const
     const int componentId = Component<TComponent>::GetId();
     const int entityId = entity.GetId();
     return entityComponentSignatures[entityId].test(componentId);
+}
+
+template <typename TComponent>
+TComponent &Registry::GetComponent(Entity entity) const
+{
+    const int componentId = Component<TComponent>::GetId();
+    const int entityId = entity.GetId();
+    auto poolPtr = std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
+    return poolPtr->Get(entityId);
+}
+
+// Entitiy functions
+template <typename TComponent, typename... TArgs>
+void Entity::AddComponent(TArgs &&...args)
+{
+    registry->AddComponent<TComponent>(*this, std::forward<TArgs>(args)...);
+}
+template <typename TComponent>
+void Entity::RemoveComponent()
+{
+    registry->RemoveComponent<TComponent>(*this);
+}
+template <typename TComponent>
+bool Entity::HasComponent() const
+{
+    return registry->HasComponent<TComponent>(*this);
+}
+template <typename TComponent>
+TComponent &Entity::GetComponent() const
+{
+    return registry->GetComponent<TComponent>(*this);
 }
 #endif
