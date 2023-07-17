@@ -6,7 +6,9 @@
 #include "../Logger/Logger.h"
 #include "../Components/TransformComponent.h"
 #include "../Components/RigidBodyComponent.h"
+#include "../Components/SpriteComponent.h"
 #include "../Systems/MovementSystem.h"
+#include "../Systems/RenderSystem.h"
 
 Game::Game()
 {
@@ -59,13 +61,18 @@ void Game::Setup()
 {
     // Add systems
     registry->AddSystem<MovementSystem>();
+    registry->AddSystem<RenderSystem>();
 
-    // Add entities
+    // Add entity
     Entity tank = registry->CreateEntity();
-
-    // Add components to entities
     tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(1.0, 1.0), 0);
-    tank.AddComponent<RigidBodyComponent>(glm::vec2(50.0, 0));
+    tank.AddComponent<RigidBodyComponent>(glm::vec2(40, 0));
+    tank.AddComponent<SpriteComponent>(10, 10); // try simple rectangle first
+
+    Entity truck = registry->CreateEntity();
+    truck.AddComponent<TransformComponent>(glm::vec2(50.0, 100.0), glm::vec2(1.0, 1.0), 0);
+    truck.AddComponent<RigidBodyComponent>(glm::vec2(0, 50.0));
+    truck.AddComponent<SpriteComponent>(10, 50); // try simple rectangle first
 }
 
 void Game::Update()
@@ -125,6 +132,9 @@ void Game::Render()
     // set up canvas
     SDL_SetRenderDrawColor(renderer, 21, 21, 21, 255);
     SDL_RenderClear(renderer); // this is actually filling colors, the naming is misleading
+
+    // invoke all systems that need to render
+    registry->GetSystem<RenderSystem>().Update(renderer);
 
     SDL_RenderPresent(renderer);
     // double-buffer: alternate front and back buffers
