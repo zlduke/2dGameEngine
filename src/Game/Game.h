@@ -28,11 +28,13 @@ public:
     ~Game();
     void Initialize();
     void Run();
+    void Setup();
+    void LoadLevel(int level);
     void ProcessInput();
     void Update();
     void Render();
     void Destroy();
-    void Setup();
+    void ParseLevelMap(const std::string fpath);
 
     int windowWidth;
     int windowHeight;

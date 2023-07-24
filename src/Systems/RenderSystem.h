@@ -17,7 +17,15 @@ public:
     };
     void Update(SDL_Renderer *renderer, std::unique_ptr<AssetStore> &assetStore)
     {
-        for (auto entity : GetSystemEntites())
+        // z-ordering -- this implementation puts the sorting per render frame
+        // another school of ECS sorts/inserts the new entity into the list at right location
+        std::vector<Entity> entities = GetSystemEntites();
+        std::sort(entities.begin(), entities.end(),[](const Entity &e1, const Entity &e2) {
+            return e1.GetComponent<SpriteComponent>().zIndex < e2.GetComponent<SpriteComponent>().zIndex;
+        });
+
+        // loop all entities
+        for (auto entity : entities)
         {
             const auto &transform = entity.GetComponent<TransformComponent>();
             const auto &sprite = entity.GetComponent<SpriteComponent>();

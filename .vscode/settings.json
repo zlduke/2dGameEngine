@@ -68,6 +68,10 @@
         "concepts": "cpp",
         "algorithm": "cpp",
         "typeindex": "cpp",
-        "set": "cpp"
-    }
+        "set": "cpp",
+        "fstream": "cpp",
+        "deque": "cpp",
+        "stack": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "enabled"
 }
