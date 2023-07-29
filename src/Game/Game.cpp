@@ -9,8 +9,10 @@
 #include "../Components/TransformComponent.h"
 #include "../Components/RigidBodyComponent.h"
 #include "../Components/SpriteComponent.h"
+#include "../Components/AnimationComponent.h"
 #include "../Systems/MovementSystem.h"
 #include "../Systems/RenderSystem.h"
+#include "../Systems/AnimationSystem.h"
 
 Game::Game()
 {
@@ -59,26 +61,30 @@ void Game::Initialize()
     SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
     isRunning = true;
 }
-void Game::ParseLevelMap(const std::string fpath){
+void Game::ParseLevelMap(const std::string fpath)
+{
     std::ifstream file(fpath);
-    if (!file) {
-        Logger::Err("Error: Could not open the file "+ fpath);
+    if (!file)
+    {
+        Logger::Err("Error: Could not open the file " + fpath);
     }
     std::string line;
     int row = 0;
     const int tileSize = 32;
     const float scale = 1.5;
     const glm::vec2 mapScale(scale, scale);
-    while (getline(file, line)) {
+    while (getline(file, line))
+    {
         std::istringstream ss(line);
         std::string token;
         int col = 0;
-        while (getline(ss, token, ',')) {
+        while (getline(ss, token, ','))
+        {
             token.erase(remove_if(token.begin(), token.end(), ::isspace), token.end());
             int value = std::stoi(token);
             // load this tile as entites
             Entity tile = registry->CreateEntity();
-            tile.AddComponent<TransformComponent>(glm::vec2(col*tileSize*scale, row*tileSize*scale), mapScale, 0.0);
+            tile.AddComponent<TransformComponent>(glm::vec2(col * tileSize * scale, row * tileSize * scale), mapScale, 0.0);
             int srcY = value / 10;
             int srcX = value % 10;
             tile.AddComponent<SpriteComponent>("maptiles", tileSize, tileSize, 0, srcX * tileSize, srcY * tileSize);
@@ -89,14 +95,18 @@ void Game::ParseLevelMap(const std::string fpath){
 
     file.close();
 }
-void Game::LoadLevel(int level){
+void Game::LoadLevel(int level)
+{
     // Add systems
     registry->AddSystem<MovementSystem>();
     registry->AddSystem<RenderSystem>();
+    registry->AddSystem<AnimationSystem>();
 
     // Adding assets to assetStore
     assetStore->AddTexture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
     assetStore->AddTexture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
+    assetStore->AddTexture(renderer, "chopper-image", "./assets/images/chopper.png");
+    assetStore->AddTexture(renderer, "radar-image", "./assets/images/radar.png");
 
     // Load the tilemaps
 
@@ -108,6 +118,18 @@ void Game::LoadLevel(int level){
     ParseLevelMap("./assets/tilemaps/jungle.map");
 
     // Add entity
+    Entity chopper = registry->CreateEntity();
+    chopper.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(2.0, 2.0), 0.0);
+    chopper.AddComponent<RigidBodyComponent>(glm::vec2(10, 2));
+    chopper.AddComponent<SpriteComponent>("chopper-image", 32, 32, 1);
+    chopper.AddComponent<AnimationComponent>(2, 10, true);
+
+    Entity radar = registry->CreateEntity();
+    radar.AddComponent<TransformComponent>(glm::vec2(windowWidth - 600, 10), glm::vec2(1.0, 1.0), 0.0);
+    radar.AddComponent<RigidBodyComponent>(glm::vec2(0, 0));
+    radar.AddComponent<SpriteComponent>("radar-image", 64, 64, 2);
+    radar.AddComponent<AnimationComponent>(8, 5, true);
+
     Entity tank = registry->CreateEntity();
     tank.AddComponent<TransformComponent>(glm::vec2(10.0, 30.0), glm::vec2(3.0, 3.0), 0.0);
     tank.AddComponent<RigidBodyComponent>(glm::vec2(40, 0));
@@ -140,6 +162,7 @@ void Game::Update()
 
     // Ask all the systems to update
     registry->GetSystem<MovementSystem>().Update(deltaTime);
+    registry->GetSystem<AnimationSystem>().Update();
 
     // In the end: Update the registry to process the queued entites to be added
     registry->Update();
